@@ -1,0 +1,16 @@
+{
+  "name": "junior-study",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.19.0",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "dev": "node src/server.mjs",
+    "start": "node src/server.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "check": "node --check public/app.js && node --check src/api.mjs && node --check src/worker.mjs",
+    "deploy": "wrangler d1 migrations apply junior-study --remote && wrangler deploy"
+  },
+  "devDependencies": { "wrangler": "4.136.2" }
+}
