@@ -56,7 +56,11 @@ export function publicCurriculum() {
   return { subjects, lessons: lessons.map(lesson => ({ ...lesson, questions: lesson.questions.map(({ answer, explanation, ...q }) => q) })) };
 }
 export function summarize(progress) {
-  const solved = new Set(progress.filter(p => p.correct).map(p => p.question_id));
+  const known = new Set(lessons.flatMap(l => l.questions.map(q => q.id)));
+  const valid = progress.filter(p => known.has(p.question_id));
+  const solved = new Set(valid.filter(p => p.correct).map(p => p.question_id));
   const completed = lessons.filter(l => l.questions.every(q => solved.has(q.id))).map(l => l.id);
-  return { solved: [...solved], completed, score: solved.size * 10 + completed.length * 20 };
+  const recent = [...valid].sort((a,b) => (b.updated_at || '').localeCompare(a.updated_at || ''));
+  const review = recent.filter(p => !Boolean(p.last_correct ?? p.correct)).map(p => p.question_id);
+  return { solved: [...solved], completed, review, attempted: valid.length, lastLessonId: recent[0]?.lesson_id || null, score: solved.size * 10 + completed.length * 20 };
 }

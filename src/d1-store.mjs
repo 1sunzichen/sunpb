@@ -1,14 +1,19 @@
-import { lessons } from './curriculum.mjs';
+import { lessons, summarize } from './curriculum.mjs';
 export class D1Store {
   constructor(db) { this.db = db; }
   getBySession(hash) { return this.db.prepare('SELECT * FROM students WHERE session_hash = ?').bind(hash).first(); }
   async createUser(user) { await this.db.prepare('INSERT INTO students (id,session_hash,nickname,created_at) VALUES (?,?,?,?)').bind(user.id,user.session_hash,user.nickname,user.created_at).run(); return user; }
   async renameUser(id, nickname) { await this.db.prepare('UPDATE students SET nickname = ? WHERE id = ?').bind(nickname,id).run(); return this.db.prepare('SELECT * FROM students WHERE id = ?').bind(id).first(); }
-  async getProgress(id) { return (await this.db.prepare('SELECT question_id,lesson_id,correct,attempts FROM progress WHERE user_id = ?').bind(id).all()).results; }
-  async recordAnswer(id, lesson, q, correct) {
-    await this.db.prepare(`INSERT INTO progress (user_id,question_id,lesson_id,correct,attempts,updated_at) VALUES (?,?,?,?,1,?)
-      ON CONFLICT(user_id,question_id) DO UPDATE SET correct = MAX(progress.correct,excluded.correct), attempts = progress.attempts+1, updated_at = excluded.updated_at`)
-      .bind(id,q.id,lesson.id,correct?1:0,new Date().toISOString()).run();
+  progressQuery(id) { return this.db.prepare('SELECT question_id,lesson_id,correct,attempts,last_correct,last_choice,updated_at FROM progress WHERE user_id = ?').bind(id); }
+  async getProgress(id) { return (await this.progressQuery(id).all()).results; }
+  async recordAnswer(id, lesson, q, correct, choice) {
+    const update = this.db.prepare(`INSERT INTO progress (user_id,question_id,lesson_id,correct,attempts,updated_at,last_correct,last_choice) VALUES (?,?,?,?,1,?,?,?)
+      ON CONFLICT(user_id,question_id) DO UPDATE SET correct = MAX(progress.correct,excluded.correct), attempts = progress.attempts+1,
+      updated_at = excluded.updated_at, last_correct = excluded.last_correct, last_choice = excluded.last_choice`)
+      .bind(id,q.id,lesson.id,correct?1:0,new Date().toISOString(),correct?1:0,choice);
+    // A D1 batch is one transaction: concurrent submissions cannot claim the same reward.
+    const [before,,after] = await this.db.batch([this.progressQuery(id),update,this.progressQuery(id)]);
+    return { progress: after.results, awarded: summarize(after.results).score - summarize(before.results).score };
   }
   async leaderboard() {
     const expected = lessons.map(l=>`WHEN '${l.id}' THEN ${l.questions.length}`).join(' ');

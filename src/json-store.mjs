@@ -26,13 +26,18 @@ export class JsonStore {
   createUser(user) { return this.change(d => { d.users.push(user); return user; }); }
   renameUser(id, nickname) { return this.change(d => { const user = d.users.find(u => u.id === id); user.nickname = nickname; return user; }); }
   getProgress(id) { return this.read(d => d.progress.filter(p => p.user_id === id)); }
-  recordAnswer(id, lesson, q, correct) {
+  recordAnswer(id, lesson, q, correct, choice) {
     return this.change(d => {
+      const before = summarize(d.progress.filter(p => p.user_id === id));
       let item = d.progress.find(p => p.user_id === id && p.question_id === q.id);
       if (!item) { item = { user_id: id, lesson_id: lesson.id, question_id: q.id, correct: false, attempts: 0 }; d.progress.push(item); }
       item.correct = item.correct || correct;
+      item.last_correct = correct;
+      item.last_choice = choice;
       item.attempts += 1;
       item.updated_at = new Date().toISOString();
+      const progress = d.progress.filter(p => p.user_id === id);
+      return { progress, awarded: summarize(progress).score - before.score };
     });
   }
   leaderboard() {

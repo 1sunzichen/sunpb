@@ -55,10 +55,9 @@ export function createApi(store) {
         const q = lesson?.questions.find(q => q.id === body.questionId);
         if (!q || !Number.isInteger(body.choice) || body.choice < 0 || body.choice >= q.options.length) return json({ error: '题目或选项无效，请重新选择。' }, 400);
         const correct = body.choice === q.answer;
-        const before = summarize(await store.getProgress(user.id));
-        await store.recordAnswer(user.id, lesson, q, correct);
-        const me = safeUser(user, await store.getProgress(user.id));
-        return json({ correct, answer: q.answer, explanation: q.explanation, awarded: Math.max(0, me.score - before.score), me });
+        const saved = await store.recordAnswer(user.id, lesson, q, correct, body.choice);
+        const me = safeUser(user, saved.progress);
+        return json({ correct, answer: q.answer, explanation: q.explanation, awarded: saved.awarded, me });
       }
       return json({ error: '接口不存在' }, 404);
     } catch (error) {
