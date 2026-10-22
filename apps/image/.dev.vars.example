@@ -1,0 +1,30 @@
+# Copy to .dev.vars for local development; never commit real secrets.
+# Production values belong in Cloudflare Worker secrets.
+APP_ORIGIN="https://your-confirmed-domain.example"
+DASHSCOPE_API_KEY=""
+
+# WeChat Native, API v3, public-key verification mode.
+WECHAT_APP_ID=""
+WECHAT_MCH_ID=""
+WECHAT_CERT_SERIAL=""
+WECHAT_PRIVATE_KEY=""
+WECHAT_API_V3_KEY=""
+WECHAT_PUBLIC_KEY_ID=""
+WECHAT_PUBLIC_KEY=""
+# Existing merchants using platform certificates can keep their current mode.
+# JSON array of {"serial":"certificate serial","pem":"certificate PEM"}.
+# Bootstrap only from certificates verified by the official API / trusted downloader.
+WECHAT_PLATFORM_CERTIFICATES=""
+
+# Alipay PC website payment (alipay.trade.page.pay), RSA2 public-key mode.
+# Face-to-Face payment permission alone does not enable this product.
+ALIPAY_APP_ID=""
+ALIPAY_SELLER_ID=""
+ALIPAY_PRIVATE_KEY=""
+ALIPAY_PUBLIC_KEY=""
+
+# Keep disabled until the image model and live payments have been verified.
+SALES_ENABLED="0"
+
+# 仅用于私有支付联调入口，至少 32 字节随机值
+PAYMENT_TEST_TOKEN=""

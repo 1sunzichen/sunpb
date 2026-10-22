@@ -1,0 +1,52 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "sunpb-image",
+  "main": "src/mounted-worker.mjs",
+  "compatibility_date": "2026-10-22",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "workers_dev": false,
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 0.1
+  },
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "run_worker_first": true,
+    "html_handling": "none"
+  },
+  "vars": {
+    "IMAGE_MODEL": "qwen-image-2.0",
+    "IMAGE_API_ORIGIN": "https://dashscope.aliyuncs.com",
+    "PRICE_CENTS": "100",
+    "SALES_ENABLED": "0",
+    "APP_ORIGIN": "https://sunpb.com.cn",
+    "APP_BASE_PATH": "/ai"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "sunpb-image",
+      "database_id": "0b8db47a-7089-4221-9bfc-100657249cff",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "triggers": {
+    "crons": [
+      "*/5 * * * *"
+    ]
+  },
+  "account_id": "9d4f9fe8daec7706125b317a8b8fd645",
+  "routes": [
+    {
+      "pattern": "sunpb.com.cn/ai/*",
+      "zone_name": "sunpb.com.cn"
+    },
+    {
+      "pattern": "sunpb.com.cn/ai",
+      "zone_name": "sunpb.com.cn"
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f5f3ed"><meta name="description" content="上传图片，描述想法，轻松完成 AI 图片合成。SUNPB 合图。">
+  <title>SUNPB 合图 · 把灵感，合在一起</title>
+  <link rel="icon" href="/ai/mark.svg" type="image/svg+xml"><link rel="stylesheet" href="/ai/style.css">
+  <script type="module" src="/ai/app.js"></script>
+</head>
+<body>
+  <header class="header">
+    <a class="brand" href="/ai/" aria-label="SUNPB 合图首页"><span class="brand-mark">S<span>↗</span></span><span>SUNPB <b>合图</b><small>IMAGE STUDIO</small></span></a>
+    <nav aria-label="主导航"><button class="nav-button active" id="studio-tab">图片合成</button><button class="nav-button" id="history-tab">我的作品 <span class="nav-dot"></span></button></nav>
+    <div class="account-actions"><button class="balance" id="buy-button"><span class="coin">✦</span><span id="balance-label">购买次数</span><span class="plus">＋</span></button><button class="account-button" id="account-button">登录 / 注册 <span>↗</span></button></div>
+  </header>
+  <main>
+    <section class="intro" id="studio-intro"><div><p class="eyebrow"><span></span> A LITTLE IMAGINATION. A NEW IMAGE.</p><h1>把灵感，<em>合在一起。</em></h1><p class="intro-copy">几张图片，一句话。让 AI 为你完成自然的融合与创作。</p></div><div class="intro-note"><span class="orbit">✳</span><p>你的素材<br><strong>新的可能</strong></p></div></section>
+    <div class="service-notice" id="service-notice" hidden role="status"></div>
+    <section class="workspace" id="studio-view" aria-label="图片合成工作台">
+      <div class="controls">
+        <section class="control-section"><div class="section-heading"><h2><span>01</span> 添加素材</h2><span class="muted" id="file-count">0 / 3 张</span></div>
+          <div class="upload-area" id="drop-zone"><input type="file" id="files" accept="image/png,image/jpeg,image/webp" multiple hidden><button class="upload-button" id="upload-button"><span class="upload-symbol">↥</span><strong>点击上传，或把图片拖到这里</strong><span>JPG、PNG、WebP · 每张不超过 5 MB</span></button></div>
+          <div class="thumb-list" id="thumb-list"></div><p class="field-hint">可添加 1–3 张。合成时，按「图一、图二」描述即可。</p>
+        </section>
+        <section class="control-section"><div class="section-heading"><h2><span>02</span> 描述你的想法</h2><span class="muted" id="prompt-count">0 / 1500</span></div>
+          <label class="sr-only" for="prompt">合成要求</label><textarea id="prompt" maxlength="1500" rows="5" placeholder="例如：把图一的商品放进图二的场景里，保持商品外观不变，让光线和阴影自然融合。"></textarea>
+          <div class="suggestions" aria-label="合成要求模板"><span>试试</span><button data-template="product">商品换景 ↗</button><button data-template="portrait">人物合照 ↗</button><button data-template="creative">创意融合 ↗</button></div>
+        </section>
+        <section class="control-section options-section"><div class="section-heading"><h2><span>03</span> 选择画面比例</h2></div>
+          <div class="ratios" role="group" aria-label="画面比例"><button class="selected" data-size="1024*1024" aria-pressed="true"><i class="ratio-icon square"></i>1:1 <span>方形</span></button><button data-size="1280*720" aria-pressed="false"><i class="ratio-icon landscape"></i>16:9 <span>横图</span></button><button data-size="720*1280" aria-pressed="false"><i class="ratio-icon portrait"></i>9:16 <span>竖图</span></button></div>
+        </section>
+        <div class="generate-area"><button class="generate-button" id="generate-button"><span>✦</span> 开始合成 <span class="button-cost">1 次</span></button><div class="generate-caption"><span>生成 1 张图片</span><span>失败自动返还次数</span></div><p class="privacy-hint">图片仅在你的账户中可见，保存 30 天。提交即将素材交由 AI 服务处理，请使用你有权使用的图片。</p></div>
+      </div>
+      <section class="result-panel" aria-label="合成结果"><div class="result-heading"><span><i></i> 创作画布</span><span id="canvas-label">等待你的灵感</span></div>
+        <div class="canvas" id="canvas"><div class="canvas-cross cross-tl">+</div><div class="canvas-cross cross-br">+</div><div class="canvas-empty" id="canvas-empty"><div class="composition-art" aria-hidden="true"><div class="art-sheet sheet-back"></div><div class="art-sheet sheet-front"><span class="art-sun"></span><span class="art-hill hill-back"></span><span class="art-hill hill-front"></span></div><span class="art-plus">+</span><span class="art-star">✳</span><span class="art-tag">YOUR NEXT CREATION</span></div><h3>好作品，从一个想法开始。</h3><p>在左侧添加素材、描述画面<br>你的合成结果将在这里出现</p></div><img id="result-image" class="result-image" alt="AI 合成结果" hidden><div id="job-state" class="job-state" hidden aria-live="polite"></div></div>
+        <div class="result-footer"><span id="result-description">素材 + 想法 = 新的可能</span><a id="download-button" class="download-button" hidden>下载图片 ↓</a><span class="footer-code" id="canvas-code">MADE WITH IMAGINATION</span></div>
+      </section>
+    </section>
+    <section id="history-view" class="history-view" hidden><div class="history-heading"><div><p class="eyebrow">YOUR CREATIONS</p><h1>我的作品<span>。</span></h1></div><button class="text-button" id="back-studio">＋ 新建合成</button></div><p class="muted">图片保存 30 天，记得下载喜欢的作品。</p><div id="history-list" class="history-list"></div></section>
+    <div class="below-workspace" id="below-workspace"><span>01 上传素材</span><i>→</i><span>02 描述想法</span><i>→</i><span>03 收获新作品</span><p>把重复的修图，留给 AI。把时间，留给创意。</p></div>
+  </main>
+  <footer class="page-footer"><span>SUNPB 合图 <span class="footer-separator">/</span> 图片里的新可能</span><button id="orders-button">购买记录</button><span><a href="/">返回自习室</a> · © 2026 SUNPB</span></footer>
+  <dialog id="auth-dialog"><button class="dialog-close" aria-label="关闭登录弹窗" data-close="auth-dialog">×</button><span class="dialog-eyebrow">WELCOME TO SUNPB</span><h2 id="auth-title">继续你的创作</h2><p class="dialog-intro">登录后，合成次数和作品会保存在你的账户里。</p><div class="auth-tabs"><button class="selected" id="login-mode">登录</button><button id="register-mode">注册</button></div><form id="auth-form"><label for="username">账号</label><input id="username" name="username" required minlength="3" maxlength="24" pattern="[a-zA-Z0-9_]{3,24}" autocomplete="username" placeholder="3–24 位字母、数字或下划线"><label for="password">密码</label><input id="password" name="password" type="password" required minlength="10" maxlength="128" autocomplete="current-password" placeholder="至少 10 位，请妥善保存"><p class="form-error" id="auth-error" role="alert"></p><button class="primary-button" id="auth-submit" type="submit">登录</button></form><p class="small-note">请记住账号和密码，购买记录将与此账号关联。</p></dialog>
+  <dialog id="pay-dialog"><button class="dialog-close" aria-label="关闭购买弹窗" data-close="pay-dialog">×</button><span class="dialog-eyebrow">MORE ROOM TO CREATE</span><h2>给灵感，再多一点空间。</h2><p class="dialog-intro">按次购买，无自动续费。每次合成生成一张图片。</p><div id="purchase-select"><div class="packages" id="packages"></div><fieldset class="payment-methods"><legend>支付方式</legend><label><input type="radio" name="payment" value="wechat" checked> <span class="payment-icon wechat">微</span> 微信支付 <small id="wechat-status"></small></label><label><input type="radio" name="payment" value="alipay"> <span class="payment-icon alipay">支</span> 支付宝 <small id="alipay-status"></small></label></fieldset><p id="payment-notice" class="payment-notice"></p><button class="primary-button" id="checkout-button">创建支付订单</button></div><div id="checkout-view" hidden><div class="payment-code-wrap"><img id="payment-code" alt="订单付款二维码"></div><p class="payment-total" id="payment-total"></p><p id="payment-status" aria-live="polite">等待支付…</p><a class="primary-button checkout-link" id="payment-link" target="_blank" rel="noopener noreferrer" hidden>打开支付宝收银台 ↗</a><p class="small-note" id="payment-help"></p><button class="primary-button" id="refresh-payment">我已支付，查询结果</button><button class="text-button full-width" id="new-order">返回购买</button></div><p class="form-error" id="pay-error" role="alert"></p></dialog>
+  <dialog id="account-dialog"><button class="dialog-close" aria-label="关闭账户弹窗" data-close="account-dialog">×</button><span class="dialog-eyebrow">YOUR ACCOUNT</span><h2 id="account-name"></h2><p id="account-credits"></p><button class="primary-button" id="account-buy">购买合成次数</button><button class="text-button full-width" id="logout-button">退出登录</button></dialog>
+  <dialog id="orders-dialog"><button class="dialog-close" aria-label="关闭购买记录" data-close="orders-dialog">×</button><span class="dialog-eyebrow">PURCHASE HISTORY</span><h2>购买记录</h2><div id="order-list"></div></dialog>
+  <div class="toast" id="toast" hidden role="status"></div>
+</body></html>
