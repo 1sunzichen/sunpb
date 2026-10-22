@@ -22,6 +22,7 @@
     "IMAGE_API_ORIGIN": "https://dashscope.aliyuncs.com",
     "PRICE_CENTS": "100",
     "SALES_ENABLED": "0",
+    "PAYMENT_TEST_ENABLED": "0",
     "APP_ORIGIN": "https://sunpb.com.cn",
     "APP_BASE_PATH": "/ai"
   },

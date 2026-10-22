@@ -2,12 +2,12 @@ const $ = id => document.getElementById(id);
 const fragment = new URLSearchParams(location.hash.slice(1));
 if (fragment.has('token')) { sessionStorage.setItem('sunpb-payment-test', fragment.get('token')); history.replaceState(null, '', location.pathname); }
 const token = sessionStorage.getItem('sunpb-payment-test') || '';
-let imageUrl, timer, currentOrder, busy = false;
+let imageUrl, timer, currentOrder, busy = false, closed = false;
 async function call(action, method = 'GET', image = false) {
   const response = await fetch(`/ai/api/payment-test/${action}`, { method, headers: { authorization: `Bearer ${token}`, ...(method === 'POST' ? { 'content-type': 'application/json' } : {}) }, ...(method === 'POST' ? { body: '{}' } : {}), signal: AbortSignal.timeout(25000) });
   if (image && response.ok) return response.blob();
   const result = await response.json();
-  if (!response.ok) throw new Error(result.error || '请求未完成');
+  if (!response.ok) throw Object.assign(new Error(result.error || '请求未完成'), { status: response.status });
   return result;
 }
 async function show(order) {
@@ -23,9 +23,24 @@ async function show(order) {
   if (!$('qr').hidden && !imageUrl) { imageUrl = URL.createObjectURL(await call('qr', 'GET', true)); $('qr').src = imageUrl; }
   if (!order.callbackReceived && !order.expired && document.visibilityState === 'visible') timer = setTimeout(check, 10000);
 }
-function error(e) { $('error').textContent = ['AbortError','TimeoutError'].includes(e.name) ? '请求超时，结果可能已保存，请查询结果后再试。' : e.message; }
-async function check() { if (busy) return; try { await show((await call('status')).order); } catch (e) { error(e); } }
-async function act(action) { if (busy) return; busy = true; $('create').disabled = true; $('refresh').disabled = true; $('error').textContent = ''; try { await show((await call(action, 'POST')).order); } catch (e) { error(e); } finally { busy = false; $('create').disabled = false; $('refresh').disabled = false; } }
+function showClosed() {
+  closed = true; clearTimeout(timer); sessionStorage.removeItem('sunpb-payment-test');
+  if (imageUrl) { URL.revokeObjectURL(imageUrl); imageUrl = null; }
+  for (const id of ['create','refresh','qr','checks','order-id']) $(id).hidden = true;
+  $('qr').removeAttribute('src'); $('error').textContent = '';
+  $('status').textContent = '本次支付联调已结束，测试入口已关闭。';
+  document.querySelector('h1').textContent = '支付联调，已收尾。';
+  document.querySelector('.intro > p').textContent = '测试结果与订单记录已归档。此页面不再创建订单或展示付款码。';
+  document.querySelector('.intro ol').hidden = true;
+  document.querySelector('.badge').textContent = '已关闭';
+  document.querySelector('.amount').hidden = true;
+  document.querySelector('.caption').textContent = '测试记录保留';
+  document.querySelector('.card > .muted:last-child').textContent = '正式图片合成与充值尚未开放。';
+  document.querySelector('footer').textContent = 'SUNPB · 微信支付接入记录';
+}
+function error(e) { if (e.status === 410 && e.message === '支付联调已结束，测试入口已关闭') { showClosed(); return; } $('error').textContent = ['AbortError','TimeoutError'].includes(e.name) ? '请求超时，结果可能已保存，请查询结果后再试。' : e.message; if (e.status === 401) $('status').textContent = '请使用维护者提供的专属测试链接打开。'; }
+async function check() { if (busy || closed) return; try { await show((await call('status')).order); } catch (e) { error(e); } }
+async function act(action) { if (busy || closed) return; busy = true; $('create').disabled = true; $('refresh').disabled = true; $('error').textContent = ''; try { await show((await call(action, 'POST')).order); } catch (e) { error(e); } finally { busy = false; $('create').disabled = closed; $('refresh').disabled = closed; } }
 $('create').onclick = () => act('order'); $('refresh').onclick = () => act('refresh');
-document.addEventListener('visibilitychange', () => { if (document.hidden) clearTimeout(timer); else if (token) check(); });
-if (token) check(); else { $('status').textContent = '请使用维护者提供的专属测试链接打开。'; $('create').disabled = true; }
+document.addEventListener('visibilitychange', () => { if (document.hidden) clearTimeout(timer); else if (!closed) check(); });
+check();

@@ -16,9 +16,11 @@ export async function settleTestPayment(db, transaction, source) {
 }
 
 export async function paymentTest(request, env) {
+  ensure(env.PAYMENT_TEST_ENABLED === '1', 410, '支付联调已结束，测试入口已关闭');
   ensure(typeof env.PAYMENT_TEST_TOKEN === 'string' && env.PAYMENT_TEST_TOKEN.length >= 32, 404, '测试入口未启用');
   const supplied = request.headers.get('authorization')?.replace(/^Bearer /, '') || '';
-  ensure(supplied.length === env.PAYMENT_TEST_TOKEN.length && timingSafeEqual(Buffer.from(supplied), Buffer.from(env.PAYMENT_TEST_TOKEN)), 401, '请使用专属测试链接打开');
+  const suppliedBytes = Buffer.from(supplied), expectedBytes = Buffer.from(env.PAYMENT_TEST_TOKEN);
+  ensure(suppliedBytes.length === expectedBytes.length && timingSafeEqual(suppliedBytes, expectedBytes), 401, '请使用专属测试链接打开');
   ensure(paymentReady(env, 'wechat'), 503, '微信支付配置尚未完成');
   const path = new URL(request.url).pathname, runHash = await sha256(env.PAYMENT_TEST_TOKEN);
   let order = await env.DB.prepare('SELECT * FROM payment_test_orders WHERE run_hash=?').bind(runHash).first();

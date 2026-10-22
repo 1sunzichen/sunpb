@@ -4,7 +4,7 @@ import mounted from '../src/mounted-worker.mjs';
 import { env, keys, request, signedWechat, notification, user } from './helpers.mjs';
 import { sha256 } from '../src/common.mjs';
 const pair = keys(), token = 'a'.repeat(64);
-function setup() { return { ...env(), ...pair.env, APP_ORIGIN: 'https://images.example', APP_BASE_PATH: '/ai', PAYMENT_TEST_TOKEN: token }; }
+function setup() { return { ...env(), ...pair.env, APP_ORIGIN: 'https://images.example', APP_BASE_PATH: '/ai', PAYMENT_TEST_ENABLED: '1', PAYMENT_TEST_TOKEN: token }; }
 const headers = { authorization: `Bearer ${token}` };
 
 test('mounted application owns only /ai and keeps normal sales closed', async () => {
@@ -27,6 +27,7 @@ test('test order is secret protected, origin checked, fixed at one cent and idem
     const raw = JSON.stringify({code_url:'weixin://wxpay/test'}); return new Response(raw, {headers:signedWechat(raw,pair.privateKey)});
   };
   assert.equal((await mounted.fetch(request('/ai/api/payment-test/order',{method:'POST'}),e)).status,401);
+  assert.equal((await mounted.fetch(request('/ai/api/payment-test/order',{method:'POST',headers:{authorization:'Bearer '+'é'.repeat(64)}}),e)).status,401);
   assert.equal((await mounted.fetch(request('/ai/api/payment-test/order',{method:'POST',headers,origin:'https://evil.example'}),e)).status,403);
   const create = () => mounted.fetch(request('/ai/api/payment-test/order',{method:'POST',headers,body:{amountCents:1000,paid:true}}),e);
   const first = await (await create()).json(); const second = await (await create()).json();
@@ -58,4 +59,25 @@ test('query confirmation cannot pretend a public callback arrived', async t => {
   globalThis.fetch=async()=>{const raw=JSON.stringify({appid:e.WECHAT_APP_ID,mchid:e.WECHAT_MCH_ID,out_trade_no:orderId,transaction_id:'wx-query',trade_state:'SUCCESS',trade_type:'NATIVE',amount:{total:1,currency:'CNY'}});return new Response(raw,{headers:signedWechat(raw,pair.privateKey)});};
   const result=await(await mounted.fetch(request('/ai/api/payment-test/refresh',{method:'POST',headers}),e)).json();
   assert.equal(result.order.status,'paid');assert.equal(result.order.queryVerified,true);assert.equal(result.order.callbackReceived,false);
+});
+
+test('closing payment tests blocks old links without dropping late verified callbacks or receipts', async () => {
+  const e = setup(), orderId = 'TEST' + 'd'.repeat(28);
+  await e.DB.prepare('INSERT INTO payment_test_orders(id,run_hash,created_at,expires_at) VALUES(?,?,1,2)').bind(orderId,await sha256(token)).run();
+  const data = {appid:e.WECHAT_APP_ID,mchid:e.WECHAT_MCH_ID,out_trade_no:orderId,transaction_id:'wx-after-close',trade_state:'SUCCESS',trade_type:'NATIVE',amount:{total:1,currency:'CNY'}};
+  e.PAYMENT_TEST_ENABLED = '0';
+  for (const action of ['order','refresh','status','qr']) {
+    const method = ['order','refresh'].includes(action) ? 'POST' : 'GET';
+    const response = await mounted.fetch(request('/ai/api/payment-test/'+action,{method,headers}),e);
+    assert.equal(response.status,410);
+  }
+  delete e.PAYMENT_TEST_TOKEN;
+  for(let i=0;i<2;i++) {
+    const response = await mounted.fetch(request('/ai/api/payments/wechat/notify',{method:'POST',origin:null,...notification(data,e,pair.privateKey)}),e);
+    assert.equal(response.status,204);
+  }
+  const saved = await e.DB.prepare('SELECT * FROM payment_test_orders WHERE id=?').bind(orderId).first();
+  assert.equal(saved.status,'paid'); assert(saved.callback_at);
+  assert.equal((await e.DB.prepare('SELECT COUNT(*) AS n FROM payment_test_orders').first()).n,1);
+  assert.equal((await e.DB.prepare('SELECT COUNT(*) AS n FROM credit_ledger').first()).n,0);
 });
