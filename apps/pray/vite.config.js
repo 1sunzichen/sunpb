@@ -1,2 +1,2 @@
 import { defineConfig } from 'vite';
-export default defineConfig({base:'/pray/',server:{host:'127.0.0.1',port:5178,strictPort:true,proxy:{'/pray/api':'http://127.0.0.1:8799'}},build:{chunkSizeWarningLimit:750}});
+export default defineConfig({base:'/pray/',server:{host:'127.0.0.1',port:5178,strictPort:true,proxy:{'/pray/api':{target:'http://127.0.0.1:8799',changeOrigin:true,configure(proxy){proxy.on('proxyReq',(out,request)=>{if(['http://127.0.0.1:5178','http://localhost:5178'].includes(request.headers.origin))out.setHeader('origin','http://127.0.0.1:8799');});}}}},build:{chunkSizeWarningLimit:750,rollupOptions:{input:{temple:new URL('./index.html',import.meta.url).pathname,memorial:new URL('./memorial/index.html',import.meta.url).pathname}}}});

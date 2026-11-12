@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f3f1e8"><meta name="description" content="为离世的亲友、宠物和动物，留一处安静的纪念。保存一张照片、一段生平，与那些未曾远去的回忆。"><title>念念 · 云上纪念园</title><link rel="icon" href="/pray/favicon.svg"></head>
+<body>
+ <header class="garden-header"><a class="garden-brand" href="/pray/memorial/"><span class="brand-mark">念</span><span>念 念<small>一念 · 云上纪念园</small></span></a><nav aria-label="导航"><a class="active" href="/pray/memorial/">纪念园</a><button id="my-memories">我的纪念</button><a href="/pray/">回到山寺 ↗</a></nav><span class="header-note">思念，总有安放之处</span></header>
+ <main>
+ <section class="garden-hero" aria-label="三维纪念花园">
+  <div id="garden-scene"></div><div class="garden-wash" aria-hidden="true"></div>
+  <div class="hero-copy"><div class="eyebrow"><i></i> 把爱留下，让思念有处可去</div><h1>告别之后，<br>依然<span>相伴。</span></h1><p>记住一个名字，一张熟悉的脸。<br>也记住，那些一起走过的日子。</p><button class="primary" id="create-memorial">留一处想念 <span>＋</span></button><small>亲友 · 宠物 · 万物生灵</small><div class="hero-footnote">一张照片，一段故事，一座只属于他们的纪念碑。</div></div>
+  <div class="garden-caption"><span>长念园</span><small>山风有信<br>花开如常</small></div>
+  <div class="scene-toolbar"><button id="focus-stone" aria-label="走近纪念碑">走近纪念碑 ↗</button><button id="reset-garden" aria-label="重置花园视角">↺</button></div><div class="scene-hint">拖动环顾 · 双指缩放 · 点击纪念碑</div><div id="scene-failure" hidden>3D 场景暂时无法显示，仍可在下方保存和阅读纪念。</div>
+ </section>
+ <section class="memory-section" id="memories"><div class="section-heading"><div><div class="eyebrow">每一个生命，都曾闪闪发光</div><h2>那些被好好记住的。</h2></div><div class="library-tools"><button id="recover-button">导入管理凭证 ↥</button><input id="recover-file" type="file" accept="application/json,.json" hidden><button id="new-memory">新建纪念 ＋</button></div></div>
+ <div class="library-bar"><div role="tablist" aria-label="纪念列表"><button role="tab" aria-selected="true" data-scope="mine">我的纪念</button><button role="tab" aria-selected="false" data-scope="public">公开纪念</button></div><button id="refresh-memories">刷新 ↻</button></div><div id="memory-list" aria-live="polite"></div><button id="more-memories" class="text-button" hidden>再看一些纪念 ↓</button><p class="library-note">新建纪念免费，默认仅自己可见。资料保存在云端；请下载管理凭证，以便换设备后找回。</p></section>
+ </main><footer><span>念念不忘，温柔如常。</span><span>一念 · 云上纪念园</span><a href="/pray/">去山间走走 ↗</a></footer>
+ <dialog id="editor-dialog"><button class="close" data-close aria-label="关闭编辑">×</button><div class="eyebrow">把故事，慢慢写下来</div><h2 id="editor-title">为思念留一个家。</h2><p class="dialog-intro">纪念已离世的亲友、宠物，或曾陪伴你的其他生命。</p>
+ <form id="memorial-form"><fieldset class="kind-options"><legend>想念的是</legend><label><input type="radio" name="kind" value="person" checked><span>亲友</span></label><label><input type="radio" name="kind" value="pet"><span>宠物</span></label><label><input type="radio" name="kind" value="animal"><span>其他动物</span></label></fieldset>
+ <div class="portrait-field"><label class="portrait-picker" for="photo-input"><img id="photo-preview" alt="选择的纪念照片" hidden><span id="photo-placeholder">＋<small>选择一张照片</small></span></label><div><label for="photo-input">留下熟悉的模样</label><p>JPG、PNG 或 WebP，最多 10 MB。<br>自动压缩为适合手机查看的纪念照片。</p><input id="photo-input" type="file" accept="image/jpeg,image/png,image/webp"><button type="button" id="remove-photo" class="text-button" hidden>移除照片</button><span id="photo-status" role="status"></span></div></div>
+ <div class="field-row"><label>名字 <input name="name" id="memory-name" required maxlength="40" placeholder="你想念的名字"></label><label>关系 / 动物种类 <em>选填</em><input name="relationship" maxlength="40" placeholder="如：外婆、橘猫、金毛"></label></div>
+ <div class="field-row"><label>出生日期 <em>选填</em><input name="birthDate" type="date"></label><label>离世日期 <em>选填</em><input name="deathDate" type="date"></label></div>
+ <label>碑上的一句话 <em>选填 · 最多 80 字</em><input name="epitaph" maxlength="80" placeholder="谢谢你，曾经来过我的生命。"></label>
+ <label>一生的故事，与共同的回忆 <textarea name="story" id="memory-story" required maxlength="5000" rows="7" placeholder="写下他们或它们的一生、喜欢的事、难忘的时刻……也可以只从一件小事开始。"></textarea></label><div class="word-count"><span>按段落记录，最多 5,000 字</span><span id="story-count">0 / 5,000</span></div>
+ <label class="check-field"><input type="checkbox" name="isPublic"><span>公开这份纪念<small>照片与故事将向所有访客展示，并可分享链接；取消勾选即可收回为私密。</small></span></label>
+ <label class="check-field"><input type="checkbox" name="deceasedConfirmed" required><span>这是对已离世的人或动物的纪念，我有权使用所填资料和照片。</span></label>
+ <p id="editor-error" class="error" role="alert"></p><button class="primary full" type="submit" id="save-memorial">保存这份纪念 <span>↗</span></button><p class="form-note">免费保存 · 默认私密 · 可继续编辑</p></form>
+ </dialog>
+ <dialog id="story-dialog"><button class="close" data-close aria-label="关闭纪念故事">×</button><article class="memory-story"><div class="eyebrow" id="story-kind"></div><img id="story-photo" alt="纪念照片" hidden><h2 id="story-name"></h2><p id="story-dates" class="story-dates"></p><blockquote id="story-epitaph"></blockquote><div class="story-divider">✳</div><p id="story-body"></p><p id="story-visibility" class="visibility-note"></p></article><div class="story-actions"><button class="primary" id="visit-memory">在花园里看看 <span>↗</span></button><button id="edit-memory">编辑纪念</button><button id="download-key">下载管理凭证与备份 ↓</button><button id="copy-memory">复制公开链接 ↗</button></div><p id="key-note" class="form-note" hidden>管理凭证可查看私密内容并修改资料，请自己妥善保存，不要公开分享。</p></dialog>
+ <div id="garden-toast" role="status" aria-live="polite"></div>
+ <script type="module" src="/src/memorial.js"></script>
+</body></html>

@@ -3,6 +3,7 @@ import {ensure,id,json,now,readJson,readLimited,sha256,validateRequestId,HttpErr
 import {createPayment,paymentReady,queryPayment,decryptWechatNotification,refreshWechatCertificates,closeWechatPayment} from './payments.mjs';
 import {CATEGORIES,publicOrder,settlePrayer,completePrayer} from './orders.mjs';
 import {sharePrayer,unsharePrayer,publicWall} from './wall.mjs';
+import {createMemorial,getMemorial,updateMemorial,listMemorials,memorialDto} from './memorials.mjs';
 const PREFIX='/pray';
 async function limit(db,key,max,seconds){const bucket=Math.floor(now()/seconds);const row=await db.prepare('INSERT INTO rate_limits(key,count,expires_at) VALUES(?,1,?) ON CONFLICT(key) DO UPDATE SET count=count+1 RETURNING count').bind(`${key}:${bucket}`,(bucket+1)*seconds).first();ensure(row.count<=max,429,'操作有些频繁，请稍后再试');}
 async function handle(request,env){
@@ -12,10 +13,20 @@ async function handle(request,env){
  if(path==='/api/payments/wechat/notify'&&request.method==='POST'){
   const raw=new TextDecoder().decode(await readLimited(request,32768));const transaction=await decryptWechatNotification(raw,request.headers,env);await settlePrayer(env.DB,transaction,'callback');return new Response(null,{status:204});
  }
- if(!path.startsWith('/api/')){const assetUrl=new URL(request.url);assetUrl.pathname=path==='/'?'/index.html':path;return env.ASSETS.fetch(new Request(assetUrl,request));}
+ if(path==='/memorial')return Response.redirect(url.origin+PREFIX+'/memorial/',308);
+ if(!path.startsWith('/api/')){const assetUrl=new URL(request.url);assetUrl.pathname=path==='/'?'/index.html':path==='/memorial/'?'/memorial/index.html':path;const asset=await env.ASSETS.fetch(new Request(assetUrl,request)),response=new Response(asset.body,asset);if(asset.ok&&/^\/assets\/.+-[a-zA-Z0-9_-]+\.(js|css)$/.test(path))response.headers.set('cache-control','public,max-age=31536000,immutable');else if(asset.headers.get('content-type')?.includes('text/html'))response.headers.set('cache-control','no-cache');return response;}
  if(path==='/api/config'&&request.method==='GET')return json({priceCents:100,paymentReady:env.SALES_ENABLED==='1'&&paymentReady(env,'wechat')});
  if(path==='/api/wall'&&request.method==='GET')return json(await publicWall(env.DB,url.searchParams.get('cursor')));
  if(request.method!=='GET'&&request.method!=='HEAD')ensure(request.headers.get('origin')===url.origin,403,'请从本站发起请求');
+ if(path==='/api/memorials'||path.startsWith('/api/memorials/')){
+  const bearer=request.headers.get('authorization')?.replace(/^Bearer /,'');if(bearer)ensure(/^[a-f0-9]{64}$/.test(bearer),401,'管理凭证不正确');const owner=bearer?await sha256(bearer):null,key=request.headers.get('x-memorial-key');
+  if(path==='/api/memorials'&&request.method==='GET'){const mine=url.searchParams.get('mine')==='1';if(mine)ensure(owner,401,'请在原浏览器打开或导入管理凭证');return json(await listMemorials(env.DB,mine?owner:null,url.searchParams.get('cursor')));}
+  if(path==='/api/memorials'&&request.method==='POST'){ensure(owner,401,'请重新打开纪念园');await limit(env.DB,`memorial-create:${owner}`,5,3600);await limit(env.DB,`memorial-ip:${await sha256(request.headers.get('cf-connecting-ip')||'local')}`,10,3600);return json({memorial:await createMemorial(env.DB,owner,await readJson(request,280000))},201);}
+  const match=/^\/api\/memorials\/([a-f0-9]{32})$/.exec(path);ensure(match,404,'未找到纪念页');
+  if(request.method==='GET'){const {row,editable}=await getMemorial(env.DB,match[1],owner,key);return json({memorial:memorialDto(row,editable)});}
+  if(request.method==='PUT'){ensure(owner,401,'请重新打开纪念园');await limit(env.DB,`memorial-edit:${owner}`,30,60);return json({memorial:await updateMemorial(env.DB,match[1],owner,key,await readJson(request,280000))});}
+  throw new HttpError(405,'请求方式不正确');
+ }
  const token=request.headers.get('authorization')?.replace(/^Bearer /,'');ensure(/^[a-f0-9]{64}$/.test(token||''),401,'请使用原浏览器打开订单');const owner=await sha256(token);
  if(path==='/api/orders'&&request.method==='POST'){
   ensure(env.SALES_ENABLED==='1'&&paymentReady(env,'wechat'),503,'支付通道准备中，暂不收款');const body=await readJson(request,4096),requestId=validateRequestId(body.requestId);
