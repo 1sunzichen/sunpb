@@ -1,0 +1,15 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "sunpb-pray",
+  "main": "server/worker.mjs",
+  "account_id": "9d4f9fe8daec7706125b317a8b8fd645",
+  "compatibility_date": "2026-11-12",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": false,
+  "assets": {"directory":"./dist","binding":"ASSETS","run_worker_first":true,"html_handling":"none","not_found_handling":"none"},
+  "vars": {"APP_ORIGIN":"https://sunpb.com.cn","APP_BASE_PATH":"/pray","SALES_ENABLED":"1"},
+  "d1_databases": [{"binding":"DB","database_name":"sunpb-pray","database_id":"d5e054dd-0400-44d7-a74a-7ae184993814","migrations_dir":"migrations"}],
+  "routes": [{"pattern":"sunpb.com.cn/pray/*","zone_name":"sunpb.com.cn"},{"pattern":"sunpb.com.cn/pray","zone_name":"sunpb.com.cn"}],
+  "triggers": {"crons":["*/15 * * * *"]},
+  "observability": {"enabled":true,"head_sampling_rate":0.1}
+}

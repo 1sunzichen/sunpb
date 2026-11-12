@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.data/
+.build/
+.wrangler/
+.dev.vars
+worker-configuration.d.ts
+.DS_Store
+*.blend1
+.openai/preview.json

@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#eeeee4" />
+    <meta name="description" content="走进一座山间的 3D 寺院，为考试、升学与心中所愿，留下一念祝福。" />
+    <title>一念 · 山间祈愿</title>
+    <link rel="icon" href="/pray/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <header class="header">
+      <a class="brand" href="/pray/" aria-label="一念首页"><span class="brand-seal">一<br>念</span><span class="brand-name">一 念<small>YI NIAN · 山间祈愿</small></span></a>
+      <nav aria-label="主要导航"><button class="nav-link active" id="nav-home">入山祈愿</button><button class="nav-link" id="nav-wishes">我的心愿<span id="wish-count" hidden>0</span></button><button class="nav-link" id="nav-about">关于一念</button></nav>
+      <div class="header-right"><span class="weather"><span class="sun-symbol">☼</span> 山间 · 晴</span><button class="icon-button" id="sound" aria-label="开启山间声音" aria-pressed="false"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m11 4-6 5H2v6h3l6 5V4Z"/><path class="sound-waves" d="M15 8c2 2 2 6 0 8m3-11c4 4 4 10 0 14"/><path class="sound-off" d="m16 9 6 6m0-6-6 6"/></svg></button></div>
+    </header>
+
+    <main id="experience">
+      <div id="scene" role="img" aria-label="可交互的三维山间寺院，控制小人穿过山门进入祈愿殿"></div>
+      <div class="scene-wash" aria-hidden="true"></div>
+      <section class="intro" id="intro">
+        <div class="eyebrow"><span></span> 山间有座寺，心中有个愿</div>
+        <h1>把心事，<br>交给<span>山风。</span></h1>
+        <p>暂别喧嚣，走一段静心的路。<br>为认真生活的自己，许一个小小的愿。</p>
+        <button class="primary-button" id="enter" disabled><span id="enter-label">山门正在打开</span><span class="button-arrow">↗</span></button>
+        <div class="intro-note"><span class="small-star">✧</span> 免费游览 · 祈愿与祈愿笺 ¥1 / 次</div>
+        <div class="wish-topics"><span>金榜题名</span><i>·</i><span>学业有成</span><i>·</i><span>平安顺遂</span></div>
+      </section>
+      <div class="landscape-label" aria-hidden="true"><span>云栖寺</span><i></i><small>一方清静<br>万般心愿</small></div>
+      <div class="scene-status" id="scene-status"><span class="status-dot"></span><span id="location">山门外 · 静候你的到来</span></div>
+      <div class="journey" id="journey" hidden><span class="journey-index" id="journey-index">01</span><div><small id="journey-kicker">入山</small><p id="journey-text">沿石板路，走进祈愿殿</p></div><button id="journey-action">前往大殿 <span>→</span></button></div>
+      <div class="temple-mark" id="temple-mark" aria-hidden="true"><span>祈愿殿</span><small>走近，许下心愿</small><i></i></div>
+      <div class="loading" id="loading"><span class="loading-ring"></span><span>等一阵山风，山门即开…</span></div>
+      <div class="scene-error" id="scene-error" hidden><p>这座山寺需要浏览器支持 3D 显示</p><span>请使用新版 Chrome、Edge 或 Safari，并开启硬件加速后重试。</span><button class="primary-button" id="retry">重新打开山门</button></div>
+      <div class="joystick" id="joystick" aria-label="拖动摇杆移动小人" hidden><div id="joystick-knob"></div></div>
+      <div class="view-tools"><button class="icon-button" id="reset-view" aria-label="重置视角" title="重置视角"><svg width="19" height="19" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.5"><path d="M3 10a9 9 0 1 1 1 7M3 4v6h6"/></svg></button><span></span><button class="icon-button" id="camera-toggle" aria-label="切换俯瞰视角" title="切换俯瞰视角"><svg width="19" height="19" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.5"><path d="m12 3 10 6-10 6L2 9l10-6Zm-9 11 9 5 9-5M3 18l9 5 9-5"/></svg></button></div>
+      <div class="controls-hint"><span class="mouse-icon"></span><span>拖动环顾</span><i>·</i><span class="desktop-hint"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> 移动</span><span class="mobile-hint">摇杆漫步</span><i>·</i><span>点击地面前往</span></div>
+    </main>
+    <footer><span>一念之间，万物温柔。</span><span class="footer-middle">愿每一份努力，都不被辜负</span><span>一方山寺 <span class="footer-flower">✳</span> 一处心安</span></footer>
+
+    <dialog id="wish-dialog" class="wish-dialog">
+      <button class="close-button" data-close aria-label="关闭许愿窗口">×</button>
+      <div class="dialog-eyebrow">云栖寺 · 祈愿殿</div><h2>此刻，心有所愿。</h2><p class="dialog-description">写给未来的自己，也送给正在努力的你。</p>
+      <form id="wish-form">
+        <fieldset><legend>想为哪件事祈愿？</legend><div class="category-grid">
+          <label class="category"><input type="radio" name="category" value="考试顺利" checked><span class="category-icon">卷</span><span>考试顺利</span><small>落笔从容，所学皆会</small></label>
+          <label class="category"><input type="radio" name="category" value="升学上岸"><span class="category-icon">阶</span><span>升学上岸</span><small>行有所向，终至彼岸</small></label>
+          <label class="category"><input type="radio" name="category" value="学业有成"><span class="category-icon">书</span><span>学业有成</span><small>学有所获，日日精进</small></label>
+          <label class="category"><input type="radio" name="category" value="平安顺遂"><span class="category-icon">安</span><span>平安顺遂</span><small>家人安康，诸事顺心</small></label>
+        </div></fieldset>
+        <label class="field-label" for="wish-text">把心愿轻轻写下 <span>选填</span></label><textarea id="wish-text" name="wish" maxlength="120" rows="3" placeholder="愿我在考场上沉着自信，不辜负每一个努力的日子。"></textarea><div class="field-meta"><span>心愿仅保存在这台设备，不会公开</span><span id="char-count">0 / 120</span></div>
+        <div class="service-price"><span>一次 3D 祈愿 + 专属祈愿笺</span><strong>¥1.00</strong></div><button type="submit" class="primary-button full-width"><span>微信支付 ¥1，许下心愿</span><span>✧</span></button><p class="gentle-note" id="payment-service-note">这是虚拟体验服务，不承诺考试、升学等现实结果。</p><button type="button" class="text-button" id="paid-resume" hidden>继续已付款祈愿 →</button>
+      </form>
+    </dialog>
+    <dialog id="result-dialog" class="result-dialog"><button class="close-button" data-close aria-label="关闭祈愿笺">×</button><div class="wish-paper" id="wish-paper"><div class="paper-top"><span>一念 · 山间祈愿</span><span id="result-date"></span></div><div class="paper-emblem">愿</div><small class="paper-kicker">心灯已亮 · 此愿已记</small><h2 id="result-title"></h2><p id="result-message"></p><div class="paper-rule"></div><p class="paper-blessing" id="result-blessing"></p><div class="paper-bottom"><span>云栖寺</span><span class="paper-seal">心诚<br>即至</span><span>愿有所成</span></div></div><button class="primary-button full-width" id="save-card"><span>保存祈愿笺</span><span>↓</span></button><button class="text-button" id="keep-walking">再在山间走走 →</button></dialog>
+    <dialog id="history-dialog"><button class="close-button" data-close aria-label="关闭我的心愿">×</button><div class="dialog-eyebrow">一念一记</div><h2>我的心愿</h2><p class="dialog-description">每一次认真许下的愿，都值得被温柔记住。</p><div id="wish-list"></div><p class="gentle-note">记录保存在当前浏览器，清理浏览器数据后将不再保留。</p></dialog>
+    <dialog id="about-dialog"><button class="close-button" data-close aria-label="关闭关于一念">×</button><div class="dialog-eyebrow">关于一念</div><h2>给心一个安静的地方。</h2><p class="about-copy">一念是一座虚拟的山间寺院。你可以在这里慢慢走一走，为考试、升学、学业，或者平凡日子里的小事，许下一份心愿。</p><p class="about-copy">游览免费。每次祈愿服务为 ¥1，包含一次 3D 祈愿体验与一张可下载的祈愿笺。这是数字体验，不是真实寺院的宗教服务，也不保证心愿实现。</p><p class="about-copy">心愿文字仅保存于当前浏览器；服务端保存订单、心愿摘要与支付所需信息。请妥善保留订单号，付款遇到问题可通过微信账单联系收款商家，勿重复付款。</p><div class="about-note">愿有所念，行有所往。</div><button class="primary-button full-width" data-close>回到山间 <span>↗</span></button></dialog>
+    <dialog id="payment-dialog" class="payment-dialog"><button class="close-button" data-close aria-label="暂时关闭付款窗口">×</button><div class="dialog-eyebrow">一念 · 微信支付</div><h2>为心愿，点一盏灯。</h2><p class="dialog-description">一次 3D 祈愿体验与专属祈愿笺</p><div class="pay-amount">¥<strong>1.00</strong><small>一次付费 · 无自动续费</small></div><img id="payment-qr" alt="微信支付一元祈愿服务付款二维码" hidden><p id="payment-status" role="status">正在准备付款码…</p><p id="payment-error" role="alert"></p><button class="primary-button full-width" id="payment-query">我已支付，确认结果 <span>→</span></button><button class="text-button" id="payment-cancel">取消未支付订单</button><p class="gentle-note">请用手机微信扫码。手机浏览本站时，可在另一台设备打开本站扫码付款。付款失败请先查询订单，避免重复付款。</p><p id="payment-order"></p></dialog>
+    <div id="toast" role="status" aria-live="polite"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
