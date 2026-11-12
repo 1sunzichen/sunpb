@@ -39,4 +39,4 @@ async function loadList(reset=true){if(loading&&!reset)return;const generation=+
   if(reset){$('#memory-list').className='memory-grid';$('#memory-list').replaceChildren();}items.forEach(addCard);cursor=result.nextCursor;$('#more-memories').hidden=!cursor;if(!$('#memory-list').children.length)emptyList(selectedScope==='mine'?'为想念的人，留一处安静。':'花园很安静，等一段被分享的故事。',selectedScope==='mine'?'从一张照片、一件往事开始。已有记录可以导入管理凭证找回。':'这里只展示创建者主动公开的纪念。');
  }catch(error){if(generation===listGeneration){if(reset)emptyList('暂时还没读到这些故事。',error.message);else toast(error.message);}}finally{if(generation===listGeneration){loading=false;$('#more-memories').disabled=false;}}}
 const today=new Date(Date.now()+8*3600000).toISOString().slice(0,10);form.elements.birthDate.max=today;form.elements.deathDate.max=today;
-loadList(true);const initialId=new URLSearchParams(location.search).get('id');if(/^[a-f0-9]{32}$/.test(initialId||''))openMemory(initialId);
+const initialParams=new URLSearchParams(location.search);if(initialParams.get('view')==='public'){scope='public';updateTabs();}loadList(true);const initialId=initialParams.get('id');if(/^[a-f0-9]{32}$/.test(initialId||''))openMemory(initialId);
