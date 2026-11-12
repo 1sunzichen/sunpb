@@ -2,6 +2,7 @@ import QRCode from 'qrcode';
 import {ensure,id,json,now,readJson,readLimited,sha256,validateRequestId,HttpError} from './common.mjs';
 import {createPayment,paymentReady,queryPayment,decryptWechatNotification,refreshWechatCertificates,closeWechatPayment} from './payments.mjs';
 import {CATEGORIES,publicOrder,settlePrayer,completePrayer} from './orders.mjs';
+import {sharePrayer,unsharePrayer,publicWall} from './wall.mjs';
 const PREFIX='/pray';
 async function limit(db,key,max,seconds){const bucket=Math.floor(now()/seconds);const row=await db.prepare('INSERT INTO rate_limits(key,count,expires_at) VALUES(?,1,?) ON CONFLICT(key) DO UPDATE SET count=count+1 RETURNING count').bind(`${key}:${bucket}`,(bucket+1)*seconds).first();ensure(row.count<=max,429,'操作有些频繁，请稍后再试');}
 async function handle(request,env){
@@ -13,6 +14,7 @@ async function handle(request,env){
  }
  if(!path.startsWith('/api/')){const assetUrl=new URL(request.url);assetUrl.pathname=path==='/'?'/index.html':path;return env.ASSETS.fetch(new Request(assetUrl,request));}
  if(path==='/api/config'&&request.method==='GET')return json({priceCents:100,paymentReady:env.SALES_ENABLED==='1'&&paymentReady(env,'wechat')});
+ if(path==='/api/wall'&&request.method==='GET')return json(await publicWall(env.DB,url.searchParams.get('cursor')));
  if(request.method!=='GET'&&request.method!=='HEAD')ensure(request.headers.get('origin')===url.origin,403,'请从本站发起请求');
  const token=request.headers.get('authorization')?.replace(/^Bearer /,'');ensure(/^[a-f0-9]{64}$/.test(token||''),401,'请使用原浏览器打开订单');const owner=await sha256(token);
  if(path==='/api/orders'&&request.method==='POST'){
@@ -25,7 +27,7 @@ async function handle(request,env){
   if(order.status==='pending'&&!order.code_url){ensure(order.expires_at>now(),410,'订单已过期，请取消后重新许愿');const code=await createPayment({...order,provider:'wechat',description:'一念 3D 祈愿体验与祈愿笺（一次）'},env);await env.DB.prepare('UPDATE prayer_orders SET code_url=? WHERE id=?').bind(code,order.id).run();}
   return json({order:publicOrder(order)},201);
  }
- const match=/^\/api\/orders\/(PRAY[a-f0-9]{28})(?:\/(qr|refresh|complete|cancel))?$/.exec(path);ensure(match,404,'接口不存在');
+ const match=/^\/api\/orders\/(PRAY[a-f0-9]{28})(?:\/(qr|refresh|complete|cancel|share|unshare))?$/.exec(path);ensure(match,404,'接口不存在');
  let order=await env.DB.prepare('SELECT * FROM prayer_orders WHERE id=? AND owner_hash=?').bind(match[1],owner).first();ensure(order,404,'未找到订单');
  const action=match[2];if(!action&&request.method==='GET')return json({order:publicOrder(order)});
  if(action==='qr'&&request.method==='GET'){ensure(order.status==='pending'&&order.code_url&&order.expires_at>now(),410,'付款码已失效，请查询订单');return new Response(await QRCode.toString(order.code_url,{type:'svg',width:280,margin:2}),{headers:{'content-type':'image/svg+xml','cache-control':'no-store','x-content-type-options':'nosniff'}});}
@@ -37,6 +39,8 @@ async function handle(request,env){
   return json({order:publicOrder(order)});
  }
  if(action==='complete'){const body=await readJson(request,2048);return json({ritual:await completePrayer(env.DB,order,owner,body.wishHash)});}
+ if(action==='share'){await limit(env.DB,`share:${owner}`,10,60);const body=await readJson(request,2048);return json(await sharePrayer(env.DB,order,owner,body.message));}
+ if(action==='unshare')return json(await unsharePrayer(env.DB,order,owner));
  throw new HttpError(404,'接口不存在');
 }
 export default {
